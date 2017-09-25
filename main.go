@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"flag"
 	"fmt"
 	"log"
@@ -43,20 +44,21 @@ var (
 	poll         bool
 	wg           sync.WaitGroup
 
-	templatesFlag     sliceVar
-	templateDirsFlag  sliceVar
-	stdoutTailFlag    sliceVar
-	stderrTailFlag    sliceVar
-	headersFlag       sliceVar
-	delimsFlag        string
-	delims            []string
-	headers           []HttpHeader
-	urls              []url.URL
-	waitFlag          hostFlagsVar
-	waitRetryInterval time.Duration
-	waitTimeoutFlag   time.Duration
-	dependencyChan    chan struct{}
-	noOverwriteFlag   bool
+	templatesFlag          sliceVar
+	templateDirsFlag       sliceVar
+	stdoutTailFlag         sliceVar
+	stderrTailFlag         sliceVar
+	headersFlag            sliceVar
+	delimsFlag             string
+	delims                 []string
+	headers                []HttpHeader
+	urls                   []url.URL
+	waitFlag               hostFlagsVar
+	waitRetryInterval      time.Duration
+	waitTimeoutFlag        time.Duration
+	dependencyChan         chan struct{}
+	noOverwriteFlag        bool
+	insecureSkipVerifyFlag bool
 
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -96,6 +98,11 @@ func waitForDependencies() {
 				wg.Add(1)
 				go func(u url.URL) {
 					client := &http.Client{
+						Transport: &http.Transport{
+							TLSClientConfig: &tls.Config{
+								InsecureSkipVerify: insecureSkipVerifyFlag,
+							},
+						},
 						Timeout: waitTimeoutFlag,
 					}
 
@@ -201,6 +208,7 @@ func main() {
 	flag.Var(&waitFlag, "wait", "Host (tcp/tcp4/tcp6/http/https/unix) to wait for before this container starts. Can be passed multiple times. e.g. tcp://db:5432")
 	flag.DurationVar(&waitTimeoutFlag, "timeout", 10*time.Second, "Host wait timeout")
 	flag.DurationVar(&waitRetryInterval, "wait-retry-interval", defaultWaitRetryInterval, "Duration to wait before retrying")
+	flag.BoolVar(&insecureSkipVerifyFlag, "insecureSkipVerify", false, "Skip server cert verification")
 
 	flag.Usage = usage
 	flag.Parse()
