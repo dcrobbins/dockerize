@@ -90,6 +90,25 @@ func waitForDependencies() {
 			log.Println("Waiting for:", u.String())
 
 			switch u.Scheme {
+			case "file":
+				wg.Add(1)
+				go func(u url.URL) {
+					defer wg.Done()
+					ticker := time.NewTicker(waitRetryInterval)
+					defer ticker.Stop()
+					var err error
+					for range ticker.C {
+						if _, err = os.Stat(u.Path); err == nil {
+							log.Printf("File %s had been generated\n", u.String())
+							return
+						} else if os.IsNotExist(err) {
+							continue
+						} else {
+							log.Printf("Problem with check file %s exist: %v. Sleeping %s\n", u.String(), err.Error(), waitRetryInterval)
+
+						}
+					}
+				}(u)
 			case "tcp", "tcp4", "tcp6":
 				waitForSocket(u.Scheme, u.Host, waitTimeoutFlag)
 			case "unix":
@@ -205,7 +224,7 @@ func main() {
 	flag.Var(&stderrTailFlag, "stderr", "Tails a file to stderr. Can be passed multiple times")
 	flag.StringVar(&delimsFlag, "delims", "", `template tag delimiters. default "{{":"}}" `)
 	flag.Var(&headersFlag, "wait-http-header", "HTTP headers, colon separated. e.g \"Accept-Encoding: gzip\". Can be passed multiple times")
-	flag.Var(&waitFlag, "wait", "Host (tcp/tcp4/tcp6/http/https/unix) to wait for before this container starts. Can be passed multiple times. e.g. tcp://db:5432")
+	flag.Var(&waitFlag, "wait", "Host (tcp/tcp4/tcp6/http/https/unix/file) to wait for before this container starts. Can be passed multiple times. e.g. tcp://db:5432")
 	flag.DurationVar(&waitTimeoutFlag, "timeout", 10*time.Second, "Host wait timeout")
 	flag.DurationVar(&waitRetryInterval, "wait-retry-interval", defaultWaitRetryInterval, "Duration to wait before retrying")
 	flag.BoolVar(&insecureSkipVerifyFlag, "insecureSkipVerify", false, "Skip server cert verification")

@@ -1,4 +1,4 @@
-dockerize ![version v0.5.0](https://img.shields.io/badge/version-v0.5.0-brightgreen.svg) ![License MIT](https://img.shields.io/badge/license-MIT-blue.svg)
+dockerize ![version v0.6.1](https://img.shields.io/badge/version-v0.6.1-brightgreen.svg) ![License MIT](https://img.shields.io/badge/license-MIT-blue.svg)
 =============
 
 Utility to simplify running applications in docker containers.
@@ -28,9 +28,9 @@ See [A Simple Way To Dockerize Applications](http://jasonwilder.com/blog/2014/10
 
 Download the latest version in your container:
 
-* [linux/amd64](https://github.com/jwilder/dockerize/releases/download/v0.5.0/dockerize-linux-amd64-v0.5.0.tar.gz)
-* [alpine/amd64](https://github.com/jwilder/dockerize/releases/download/v0.5.0/dockerize-alpine-linux-amd64-v0.5.0.tar.gz)
-* [darwin/amd64](https://github.com/jwilder/dockerize/releases/download/v0.5.0/dockerize-darwin-amd64-v0.5.0.tar.gz)
+* [linux/amd64](https://github.com/jwilder/dockerize/releases/download/v0.6.1/dockerize-linux-amd64-v0.6.1.tar.gz)
+* [alpine/amd64](https://github.com/jwilder/dockerize/releases/download/v0.6.1/dockerize-alpine-linux-amd64-v0.6.1.tar.gz)
+* [darwin/amd64](https://github.com/jwilder/dockerize/releases/download/v0.6.1/dockerize-darwin-amd64-v0.6.1.tar.gz)
 
 
 ### Docker Base Image
@@ -48,7 +48,7 @@ ENTRYPOINT dockerize ...
 ``` Dockerfile
 RUN apt-get update && apt-get install -y wget
 
-ENV DOCKERIZE_VERSION v0.5.0
+ENV DOCKERIZE_VERSION v0.6.1
 RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
     && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
     && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
@@ -60,7 +60,7 @@ RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSI
 ``` Dockerfile
 RUN apk add --no-cache openssl
 
-ENV DOCKERIZE_VERSION v0.5.0
+ENV DOCKERIZE_VERSION v0.6.1
 RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
     && tar -C /usr/local/bin -xzvf dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
     && rm dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz
@@ -138,10 +138,10 @@ $ dockerize -wait http://web:80 -wait-http-header "Authorization:Basic QWxhZGRpb
 
 It is common when using tools like [Docker Compose](https://docs.docker.com/compose/) to depend on services in other linked containers, however oftentimes relying on [links](https://docs.docker.com/compose/compose-file/#links) is not enough - whilst the container itself may have _started_, the _service(s)_ within it may not yet be ready - resulting in shell script hacks to work around race conditions.
 
-Dockerize gives you the ability to wait for services on a specified protocol (`tcp`, `tcp4`, `tcp6`, `http`, `https` and `unix`) before starting your application:
+Dockerize gives you the ability to wait for services on a specified protocol (`file`, `tcp`, `tcp4`, `tcp6`, `http`, `https` and `unix`) before starting your application:
 
 ```
-$ dockerize -wait tcp://db:5432 -wait http://web:80
+$ dockerize -wait tcp://db:5432 -wait http://web:80 -wait file:///tmp/generated-file
 ```
 
 ### Timeout
